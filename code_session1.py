@@ -1,6 +1,5 @@
 import numpy as np
 import pandas as pd
-from sklearn.datasets import load_diabetes
 from sklearn.linear_model import Ridge
 from sklearn.metrics import mean_squared_error
 
@@ -57,13 +56,17 @@ class RIDGE_REGRESSION:
         X_train,
         y_train,
         LAMBDA,
-        learning_rate=0.015,
+        learning_rate=0.01,
         max_epoch=100,
-        batch_size=15,
+        batch_size=128,
     ):
         iden = np.identity(X_train.shape[1])
         iden[0][0] = 0
-        w = np.random.randn(X_train.shape[1])
+        # w = np.random.randn(X_train.shape[1])
+        w = np.array(
+            [900, 50, -34, -8, -9, 3, -40, -30, 60, 84, -7, 13, -11, 1, 57, 8]
+        )  # Guess Random W !!!
+
         last_loss = 10e8
         for epoch in range(max_epoch):
             arr = np.array(range(X_train.shape[0]))
@@ -78,7 +81,7 @@ class RIDGE_REGRESSION:
 
                 grad = X_train_sub.transpose().dot(
                     X_train_sub.dot(w) - y_train_sub
-                ) + iden.dot(w)
+                ) + LAMBDA * iden.dot(w)
 
                 w = w - learning_rate * grad
 
@@ -141,7 +144,7 @@ class RIDGE_REGRESSION:
 
 if __name__ == "__main__":
 
-    X, y = get_data("data/death_rate_data.txt")
+    X, y = get_data("death_rate_data.txt")
     X = normalize_and_addbias(X)
     X_train, y_train = X[:50], y[:50]
     X_test, y_test = X[50:], y[50:]
