@@ -3,7 +3,7 @@ import re
 from collections import defaultdict
 import numpy as np
 
-
+# Gather directory of data (test, train and list words)
 def gather_20newsgroups_data():
     path = "20news-bydate/"
 
@@ -22,6 +22,7 @@ def gather_20newsgroups_data():
     return train_dir, test_dir, list_newsgroups
 
 
+# Gather stop words
 with open("20news-bydate/stop_words.txt") as f:
     stop_words = f.read().splitlines()
 
@@ -29,7 +30,7 @@ from nltk.stem.porter import PorterStemmer
 
 stemmer = PorterStemmer()
 
-
+# Collecting data from parent_dir and newsgroup_list
 def collect_data_from(parent_dir, newsgroup_list):
     data = []
     for group_id, newsgroup in enumerate(newsgroup_list):
@@ -58,11 +59,10 @@ def collect_data_from(parent_dir, newsgroup_list):
     return data
 
 
+# Get data
 train_dir, test_dir, list_newsgroups = gather_20newsgroups_data()
-
 train_data = collect_data_from(parent_dir=train_dir, newsgroup_list=list_newsgroups)
 test_data = collect_data_from(parent_dir=test_dir, newsgroup_list=list_newsgroups)
-
 
 full_data = train_data + test_data
 with open("20news-bydate/20news-train-processed.txt", "w") as f:
@@ -72,7 +72,7 @@ with open("20news-bydate/20news-test-processed.txt", "w") as f:
 with open("20news-bydate/20news-full-processed.txt", "w") as f:
     f.write("\n".join(full_data))
 
-
+# Vocabulary
 def generate_vocabulary(data_path):
     def compute_idf(article_appeared, article_total):
         assert article_appeared > 0
@@ -97,12 +97,13 @@ def generate_vocabulary(data_path):
     words_idfs.sort(key=lambda x: -x[1])
     print("Vocabulary size: {}".format(len(doc_count)))
 
-    with open("20news-bydate/words_idfs.txt", "w") as f:
+    with open("20news-bydate/full_words_idfs.txt", "w") as f:
         f.write("\n".join([word + "<fff>" + str(idf) for word, idf in words_idfs]))
 
 
+# Counting tf-idf score
 def get_tf_idf(data_path):
-    with open("20news-bydate/words_idfs.txt") as f:
+    with open("20news-bydate/full_words_idfs.txt") as f:
         lines = f.read().splitlines()
         words_idfs = [
             (line.split("<fff>")[0], float(line.split("<fff>")[1])) for line in lines
@@ -144,7 +145,7 @@ def get_tf_idf(data_path):
         sparse_rep = " ".join(words_tfidfs_normalized)
         data_tf_idf.append((label, doc_id, sparse_rep))
 
-    with open("20news-bydate/words_tf_idf.txt", "w") as f:
+    with open("20news-bydate/full_words_tf_idf.txt", "w") as f:
         f.write(
             "\n".join(
                 [
@@ -155,5 +156,5 @@ def get_tf_idf(data_path):
         )
 
 
-generate_vocabulary("20news-bydate/20news-train-processed.txt")
-get_tf_idf("20news-bydate/20news-train-processed.txt")
+generate_vocabulary("20news-bydate/20news-full-processed.txt")
+get_tf_idf("20news-bydate/20news-full-processed.txt")

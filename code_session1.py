@@ -3,7 +3,7 @@ import pandas as pd
 from sklearn.linear_model import Ridge
 from sklearn.metrics import mean_squared_error
 
-
+# Get data
 def get_data(path):
     table = np.loadtxt(path)
     m, n = table.shape
@@ -12,6 +12,7 @@ def get_data(path):
     return X, y
 
 
+# Normalizing and adding bias
 def normalize_and_addbias(X):
     X_copy = np.array(X)
     m, n = X_copy.shape
@@ -30,14 +31,17 @@ class RIDGE_REGRESSION:
     def __init__(self):
         return
 
+    # Loss error
     def compute_RSS(self, y_new, y_predicted):
         error = 1.0 / 2 * np.sum((y_new - y_predicted) ** 2)
         return error
 
+    # Loss error ridge
     def compute_ridge(self, y_new, y_predicted, w_learned):
         error = np.sum((y_new - y_predicted) ** 2) + np.sum(w_learned ** 2)
         return error / 2
 
+    # Solving by normal equation
     def fit(self, X_train, y_train, LAMBDA):
         iden = np.identity(X_train.shape[1])
         iden[0][0] = 0
@@ -48,9 +52,11 @@ class RIDGE_REGRESSION:
         )
         return w
 
+    # Predicting
     def predict(self, X, w):
         return np.array(X.dot(w))
 
+    # Solving by minibatch gradient
     def fit_GD(
         self,
         X_train,
@@ -92,7 +98,10 @@ class RIDGE_REGRESSION:
                 last_loss = new_loss
         return w
 
+    # Find best LAMBDA for ridge regression
     def get_best_LAMBDA(self, X_train, y_train):
+
+        # Cross valid
         def cross_validation(number_folds, LAMBDA):
 
             row_ids = np.array(range(X_train.shape[0]))
@@ -117,6 +126,7 @@ class RIDGE_REGRESSION:
 
             return aver_RSS / number_folds
 
+        # Scanning
         def range_scan(best_LAMBDA, minimum_RSS, LAMBDA_values):
             for current_LAMBDA in LAMBDA_values:
                 aver_RSS = cross_validation(number_folds=5, LAMBDA=current_LAMBDA)
@@ -125,6 +135,7 @@ class RIDGE_REGRESSION:
                     minimum_RSS = aver_RSS
             return best_LAMBDA, minimum_RSS
 
+        # Scanning LAMBDA with "BIG" range
         best_LAMBDA, minimum_RSS = range_scan(
             best_LAMBDA=0, minimum_RSS=1000 ** 2, LAMBDA_values=range(50)
         )
@@ -133,6 +144,7 @@ class RIDGE_REGRESSION:
             k * 1.0 / 1000
             for k in range(max(0, (best_LAMBDA - 1) * 100, (best_LAMBDA + 1) * 100, 1))
         ]
+        # Scanning LAMBDA with "SMALL" range
         best_LAMBDA, minimum_RSS = range_scan(
             best_LAMBDA=best_LAMBDA,
             minimum_RSS=minimum_RSS,
